@@ -63,10 +63,35 @@ const deleteProduct = (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+const getfilteredProducts = (req, res) => {
+  try {
+    const { category, available } = req.query;
+    const hasAvailableFilter = available !== undefined;
+
+    const filteredProducts = Array.from(products.values()).filter((product) => {
+      const categoryMatches =
+        category === undefined || product.category === category;
+      // product.available may be stored as a boolean or a string depending on
+      // what the client sent when creating it, so compare on string form.
+      const availableMatches =
+        !hasAvailableFilter || String(product.available) === available;
+      return categoryMatches && availableMatches;
+    });
+
+    console.log(
+      `Products filtered by category "${category}" and availability "${available}": ${JSON.stringify(filteredProducts)}`,
+    );
+    res.status(200).json(filteredProducts);
+  } catch (error) {
+    console.error("Error fetching filtered products:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 module.exports = {
   createProduct,
   getAllMenu,
   getProductById,
   updateProduct,
   deleteProduct,
+  getfilteredProducts,
 };
